@@ -347,10 +347,10 @@
         </div>
 
         <div id="audioRack">
-            <audio id="audio-rain" loop preload="auto" src="https://upload.wikimedia.org/wikipedia/commons/8/87/Rain_on_roof_loop.ogg"></audio>
-            <audio id="audio-wind" loop preload="auto" src="https://archive.org/download/ambient-sound-effects-loop/Wind-Loop.mp3"></audio>
-            <audio id="audio-fire" loop preload="auto" src="https://upload.wikimedia.org/wikipedia/commons/5/50/Fireplace_Sound_Effect_Sound_Bite.ogg"></audio>
-            <audio id="audio-birds" loop preload="auto" src="https://archive.org/download/ambient-sound-effects-loop/Birds-Loop.mp3"></audio>
+            <audio id="audio-rain" loop preload="auto" src="./rain.mp3"></audio>
+            <audio id="audio-wind" loop preload="auto" src="./wind.mp3"></audio>
+            <audio id="audio-fire" loop preload="auto" src="./fire.mp3"></audio>
+            <audio id="audio-birds" loop preload="auto" src="./birds.mp3"></audio>
         </div>
 
         <div class="mixer-container">
@@ -414,7 +414,6 @@
 
     <script>
         // --- MIXER ARCHITECTURE ENGINE ---
-        // Complete structural alignment executed. 
         const channels = [
             { id: 'rain', audio: document.getElementById('audio-rain'), slider: document.getElementById('slider-rain'), fill: document.getElementById('fill-rain'), container: document.getElementById('chan-rain') },
             { id: 'wind', audio: document.getElementById('audio-wind'), slider: document.getElementById('slider-wind'), fill: document.getElementById('fill-wind'), container: document.getElementById('chan-wind') },
@@ -428,16 +427,10 @@
         
         let isMasterPlaying = false;
 
-        // Initialize volumes and parameters
         channels.forEach(chan => {
             chan.audio.volume = chan.slider.value;
             chan.fill.style.width = `${chan.slider.value * 100}%`;
             updateChannelState(chan);
-
-            // Error detection layout bypass
-            chan.audio.addEventListener('error', (e) => {
-                console.warn(`SCANORY Mixer Node [${chan.id}] handled locally or streamed.`);
-            });
 
             chan.slider.addEventListener('input', (e) => {
                 const val = e.target.value;
@@ -446,11 +439,9 @@
                 
                 updateChannelState(chan);
 
-                // If user increases a slider while master is off, wake the deck
                 if (!isMasterPlaying && val > 0) {
                     toggleMasterPlayback();
                 } else if (isMasterPlaying && val > 0) {
-                    // Force play if master is running and track was at zero
                     chan.audio.play().catch(() => {});
                 }
             });
@@ -475,7 +466,7 @@
                 channels.forEach(chan => {
                     if (chan.audio.volume > 0) {
                         chan.audio.play().catch(err => {
-                            console.log("SCANORY Audio standard context executed.");
+                            console.log("SCANORY Audio Context active on GitHub Pages.");
                         });
                     }
                 });
