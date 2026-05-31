@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SCANORY | Premium Ambiance Mixer</title>
+    
+    <style>
+        /* =========================================
+           SCANORY | BRAND COLOR LAWS & VARIABLES
+           ========================================= */
+        :root {
+            --scanory-bg: #12100E;
+            --scanory-section: #1E1A17;
+            --scanory-primary: #C68A47;
+            --scanory-secondary: #A0682B;
+            --scanory-text-main: #F4F0EA;
+            --scanory-text-sub: #D3CFC9;
+            --glass-bg: rgba(30, 26, 23, 0.4);
+            --glass-border: rgba(198, 138, 71, 0.15);
+        }
+
+        @font-face { font-family: 'Raleway'; src: local('Raleway'), sans-serif; }
+        @font-face { font-family: 'Inter'; src: local('Inter'), sans-serif; }
+
+        /* =========================================
+           RESET & CORE FULLSCREEN ARCHITECTURE
+           ========================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--scanory-bg);
+            color: var(--scanory-text-main);
+            font-family: 'Inter', system-ui, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            max-width: 100%;
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overscroll-behavior: none; 
+        }
+
+        canvas#stardust {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        main {
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .spacer-top { flex: 1; } 
+        .spacer-bottom { flex: 1; }
+
+        /* =========================================
+           HEADER & LOGO AREA
+           ========================================= */
+        .vault-header {
+            flex: none;
+            text-align: center;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            width: 100%;
+        }
+
+        .vault-header h2 {
+            font-family: 'Raleway', sans-serif;
+            color: var(--scanory-primary);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+        }
+
+        /* Central Vault Brand Focal Point */
+        .brand-center {
+            flex: none;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .brand-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+        }
+
+        .brand-glow {
+            position: absolute;
+            inset: -10px;
+            background: var(--scanory-primary);
+            filter: blur(30px);
+            opacity: 0.15;
+            z-index: -1;
+            border-radius: 50%;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .is-playing .brand-glow {
+            opacity: 0.4;
+            transform: scale(1.1);
+        }
+
+        .glass-panel-center {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            border-radius: 38px; 
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        .pulse-logo-node {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--scanory-primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .is-playing .pulse-logo-node {
+            animation: logo-breathe 3s infinite ease-in-out;
+        }
+
+        @keyframes logo-breathe {
+            0%, 100% { transform: scale(1); border-color: var(--scanory-primary); }
+            50% { transform: scale(1.05); border-color: var(--scanory-text-main); box-shadow: 0 0 15px rgba(198, 138, 71, 0.3); }
+        }
+
+        /* =========================================
+           MIXER SOUNDBOARD INTERFACE
+           ========================================= */
+        .mixer-container {
+            flex: none;
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .mixer-channel {
+            background: rgba(30, 26, 23, 0.3);
+            border: 1px solid rgba(198, 138, 71, 0.05);
+            border-radius: 16px;
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .mixer-channel.active {
+            border-color: rgba(198, 138, 71, 0.2);
+            background: rgba(30, 26, 23, 0.7);
+        }
+
+        .channel-icon {
+            font-size: 1.2rem;
+            width: 1.8rem;
+            text-align: center;
+            opacity: 0.5;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            flex: none;
+        }
+
+        .mixer-channel.active .channel-icon {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .channel-info {
+            width: 4.5rem;
+            flex: none;
+        }
+
+        .channel-name {
+            font-family: 'Raleway', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--scanory-text-sub);
+        }
+
+        .mixer-channel.active .channel-name {
+            color: var(--scanory-primary);
+        }
+
+        /* Custom Slider Rack */
+        .slider-wrapper {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 16px;
+        }
+
+        .track-bg {
+            position: absolute;
+            left: 0; right: 0; top: 50%;
+            transform: translateY(-50%);
+            height: 3px; background: rgba(211, 207, 201, 0.1);
+            border-radius: 2px; z-index: 1;
+        }
+
+        .progress-fill {
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%);
+            height: 3px; background: var(--scanory-text-sub);
+            border-radius: 2px; z-index: 2;
+            pointer-events: none;
+            transition: background 0.3s ease;
+        }
+
+        .mixer-channel.active .progress-fill {
+            background: var(--scanory-primary);
+            box-shadow: 0 0 8px rgba(198, 138, 71, 0.4);
+        }
+
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent;
+            position: relative; z-index: 3; margin: 0; outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%;
+            background: #4A433E; cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease; margin-top: -5px;
+        }
+
+        .mixer-channel.active input[type=range]::-webkit-slider-thumb {
+            background: var(--scanory-primary);
+            box-shadow: 0 0 8px rgba(198, 138, 71, 0.8);
+        }
+
+        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.3); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 3px; background: transparent; border: none; }
+        
+        input[type=range]::-moz-range-thumb {
+            height: 14px; width: 14px; border: none; border-radius: 50%;
+            background: #4A433E; cursor: pointer; transition: background 0.3s ease;
+        }
+        .mixer-channel.active input[type=range]::-moz-range-thumb { background: var(--scanory-primary); }
+        input[type=range]::-moz-range-track { width: 100%; height: 3px; background: transparent; border: none; }
+
+        /* =========================================
+           MASTER TRIGGER ACTION
+           ========================================= */
+        .master-trigger-area {
+            flex: none;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-top: 2.5rem;
+        }
+
+        .btn-master-play {
+            background: var(--scanory-section);
+            color: var(--scanory-primary);
+            border: 1px solid rgba(198, 138, 71, 0.3);
+            font-family: 'Raleway', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 1rem 2.5rem;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .btn-master-play:hover {
+            transform: translateY(-2px);
+            border-color: var(--scanory-primary);
+            box-shadow: 0 15px 30px rgba(198, 138, 71, 0.2);
+            color: var(--scanory-text-main);
+        }
+
+        .btn-master-play.active {
+            background: var(--scanory-primary);
+            color: var(--scanory-bg);
+            border-color: var(--scanory-primary);
+            box-shadow: 0 0 30px rgba(198, 138, 71, 0.4);
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body id="vaultBody">
+
+    <canvas id="stardust"></canvas>
+
+    <main>
+        <div class="spacer-top"></div>
+
+        <div class="vault-header">
+            <h2>Scanory Mixer</h2>
+        </div>
+
+        <div class="brand-center">
+            <div class="brand-container">
+                <div class="brand-glow"></div>
+                <div class="glass-panel-center">
+                    <div class="pulse-logo-node">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a10 10 0 1 0 10 10H12z"/>
+                            <path d="M12 2a10 10 0 0 1 10 10H12z" opacity="0.5"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="audioRack">
+            <audio id="audio-rain" loop preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2526/2526-84.wav"></audio>
+            <audio id="audio-wind" loop preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2432/2432-84.wav"></audio>
+            <audio id="audio-water" loop preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2513/2513-84.wav"></audio>
+            <audio id="audio-birds" loop preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2437/2437-84.wav"></audio>
+        </div>
+
+        <div class="mixer-container">
+            <div class="mixer-channel" id="chan-rain">
+                <span class="channel-icon">🌧️</span>
+                <div class="channel-info">
+                    <div class="channel-name">Rain</div>
+                </div>
+                <div class="slider-wrapper">
+                    <div class="track-bg"></div>
+                    <div class="progress-fill" id="fill-rain" style="width: 50%;"></div>
+                    <input type="range" id="slider-rain" min="0" max="1" step="0.01" value="0.5">
+                </div>
+            </div>
+
+            <div class="mixer-channel" id="chan-wind">
+                <span class="channel-icon">💨</span>
+                <div class="channel-info">
+                    <div class="channel-name">Wind</div>
+                </div>
+                <div class="slider-wrapper">
+                    <div class="track-bg"></div>
+                    <div class="progress-fill" id="fill-wind" style="width: 0%;"></div>
+                    <input type="range" id="slider-wind" min="0" max="1" step="0.01" value="0">
+                </div>
+            </div>
+
+            <div class="mixer-channel" id="chan-water">
+                <span class="channel-icon">🌊</span>
+                <div class="channel-info">
+                    <div class="channel-name">Stream</div>
+                </div>
+                <div class="slider-wrapper">
+                    <div class="track-bg"></div>
+                    <div class="progress-fill" id="fill-water" style="width: 0%;"></div>
+                    <input type="range" id="slider-water" min="0" max="1" step="0.01" value="0">
+                </div>
+            </div>
+
+            <div class="mixer-channel" id="chan-birds">
+                <span class="channel-icon">🐦</span>
+                <div class="channel-info">
+                    <div class="channel-name">Birds</div>
+                </div>
+                <div class="slider-wrapper">
+                    <div class="track-bg"></div>
+                    <div class="progress-fill" id="fill-birds" style="width: 0%;"></div>
+                    <input type="range" id="slider-birds" min="0" max="1" step="0.01" value="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="master-trigger-area">
+            <button id="masterPlayBtn" class="btn-master-play">
+                <span id="masterPlayText">Activate Vault</span>
+            </button>
+        </div>
+
+        <div class="spacer-bottom"></div>
+    </main>
+
+    <script>
+        // --- MIXER ARCHITECTURE ENGINE ---
+        const channels = [
+            { id: 'rain', audio: document.getElementById('audio-rain'), slider: document.getElementById('slider-rain'), fill: document.getElementById('fill-rain'), container: document.getElementById('chan-rain') },
+            { id: 'wind', audio: document.getElementById('audio-wind'), slider: document.getElementById('slider-wind'), fill: document.getElementById('fill-wind'), container: document.getElementById('chan-wind') },
+            { id: 'water', audio: document.getElementById('audio-water'), slider: document.getElementById('slider-water'), fill: document.getElementById('fill-water'), container: document.getElementById('chan-water') },
+            { id: 'birds', audio: document.getElementById('audio-birds'), slider: document.getElementById('slider-birds'), fill: document.getElementById('fill-birds'), container: document.getElementById('chan-birds') }
+        ];
+
+        const masterPlayBtn = document.getElementById('masterPlayBtn');
+        const masterPlayText = document.getElementById('masterPlayText');
+        const vaultBody = document.getElementById('vaultBody');
+        
+        let isMasterPlaying = false;
+
+        channels.forEach(chan => {
+            chan.audio.volume = chan.slider.value;
+            chan.fill.style.width = `${chan.slider.value * 100}%`;
+            updateChannelState(chan);
+
+            chan.slider.addEventListener('input', (e) => {
+                const val = e.target.value;
+                chan.audio.volume = val;
+                chan.fill.style.width = `${val * 100}%`;
+                
+                updateChannelState(chan);
+
+                if (!isMasterPlaying && val > 0) {
+                    toggleMasterPlayback();
+                }
+            });
+        });
+
+        function updateChannelState(chan) {
+            if (chan.audio.volume > 0) {
+                chan.container.classList.add('active');
+            } else {
+                chan.container.classList.remove('active');
+            }
+        }
+
+        function toggleMasterPlayback() {
+            isMasterPlaying = !isMasterPlaying;
+
+            if (isMasterPlaying) {
+                masterPlayBtn.classList.add('active');
+                vaultBody.classList.add('is-playing');
+                masterPlayText.textContent = "Mute Ambiance";
+
+                channels.forEach(chan => {
+                    if (chan.audio.volume > 0) {
+                        chan.audio.play().catch(err => {
+                            console.log("SCANORY Engine: Local audio context execution handled.");
+                        });
+                    }
+                });
+            } else {
+                masterPlayBtn.classList.remove('active');
+                vaultBody.classList.remove('is-playing');
+                masterPlayText.textContent = "Activate Vault";
+
+                channels.forEach(chan => {
+                    chan.audio.pause();
+                });
+            }
+        }
+
+        masterPlayBtn.addEventListener('click', toggleMasterPlayback);
+
+        // --- BACKGROUND STARDUST ENGINE ---
+        const canvas = document.getElementById('stardust');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.speedY = Math.random() * -0.4 - 0.1;
+                this.speedX = (Math.random() - 0.5) * 0.2;
+                this.opacity = Math.random() * 0.5 + 0.1; 
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(198, 138, 71, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+        function animateStardust() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            requestAnimationFrame(animateStardust);
+        }
+        animateStardust();
+    </script>
+</body>
+</html>
