@@ -65,7 +65,6 @@
             width: 100%;
             height: 100%;
             position: relative;
-            /* Dinamičko raspoređivanje da iskoristi max prostora bez skrola */
             justify-content: space-evenly;
             padding: env(safe-area-inset-top, 2vh) 0 env(safe-area-inset-bottom, 2vh) 0; 
         }
@@ -645,11 +644,14 @@
         <div class="presets-wrapper">
             <div class="presets-title">Signature Mixes</div>
             <div class="presets-grid">
-                <div class="preset-pill" onclick="applyPreset('reflections', this)">
-                    <span class="preset-icon">🌙</span><span class="preset-name">Reflections</span>
+                <div class="preset-pill" onclick="applyPreset('focus', this)">
+                    <span class="preset-icon">🎯</span><span class="preset-name">Deep Focus</span>
                 </div>
                 <div class="preset-pill" onclick="applyPreset('meditation', this)">
-                    <span class="preset-icon">🌿</span><span class="preset-name">Meditation</span>
+                    <span class="preset-icon">🧘</span><span class="preset-name">Meditation</span>
+                </div>
+                <div class="preset-pill" onclick="applyPreset('reading', this)">
+                    <span class="preset-icon">📖</span><span class="preset-name">Deep Reading</span>
                 </div>
                 <div class="preset-pill" onclick="applyPreset('inspiration', this)">
                     <span class="preset-icon">✨</span><span class="preset-name">Inspiration</span>
@@ -657,39 +659,36 @@
                 <div class="preset-pill" onclick="applyPreset('nature', this)">
                     <span class="preset-icon">🍃</span><span class="preset-name">Nature</span>
                 </div>
-                <div class="preset-pill" onclick="applyPreset('ambiance', this)">
-                    <span class="preset-icon">🕯️</span><span class="preset-name">Ambiance</span>
-                </div>
-                <div class="preset-pill" onclick="applyPreset('mystical', this)">
-                    <span class="preset-icon">🔮</span><span class="preset-name">Mystical</span>
+                <div class="preset-pill" onclick="applyPreset('nap', this)">
+                    <span class="preset-icon">🌙</span><span class="preset-name">Power Nap</span>
                 </div>
             </div>
         </div>
 
         <div id="audioRack">
             <audio id="audio-rain" loop preload="auto" src="./SoftRain.mp3"></audio>
-            <audio id="audio-wind" loop preload="auto" src="./LightWind.mp3"></audio>
+            <audio id="audio-surf" loop preload="auto" src="./OceanWave.mp3"></audio>
             <audio id="audio-fire" loop preload="auto" src="./Fireplace.mp3"></audio>
-            <audio id="audio-river" loop preload="auto" src="./SmallRiver.mp3"></audio>
+            <audio id="audio-brown" loop preload="auto" src="./BrownNoise.mp3"></audio>
             <audio id="audio-ambient" loop preload="auto" src="./AmbientTone.mp3"></audio>
         </div>
 
         <div class="mixer-container">
             <div class="mixer-channel" id="chan-rain">
                 <span class="channel-icon">🌧️</span>
-                <div class="channel-info"><div class="channel-name">Rain</div></div>
+                <div class="channel-info"><div class="channel-name">Soft Rain</div></div>
                 <div class="slider-wrapper">
-                    <div class="track-bg"></div><div class="progress-fill" id="fill-rain" style="width: 50%;"></div>
-                    <input type="range" id="slider-rain" min="0" max="1" step="0.01" value="0.5">
+                    <div class="track-bg"></div><div class="progress-fill" id="fill-rain" style="width: 0%;"></div>
+                    <input type="range" id="slider-rain" min="0" max="1" step="0.01" value="0">
                 </div>
             </div>
 
-            <div class="mixer-channel" id="chan-wind">
-                <span class="channel-icon">💨</span>
-                <div class="channel-info"><div class="channel-name">Wind</div></div>
+            <div class="mixer-channel" id="chan-surf">
+                <span class="channel-icon">🌊</span>
+                <div class="channel-info"><div class="channel-name">Ocean Surf</div></div>
                 <div class="slider-wrapper">
-                    <div class="track-bg"></div><div class="progress-fill" id="fill-wind" style="width: 0%;"></div>
-                    <input type="range" id="slider-wind" min="0" max="1" step="0.01" value="0">
+                    <div class="track-bg"></div><div class="progress-fill" id="fill-surf" style="width: 0%;"></div>
+                    <input type="range" id="slider-surf" min="0" max="1" step="0.01" value="0">
                 </div>
             </div>
 
@@ -702,18 +701,18 @@
                 </div>
             </div>
 
-            <div class="mixer-channel" id="chan-river">
-                <span class="channel-icon">🌊</span>
-                <div class="channel-info"><div class="channel-name">River</div></div>
+            <div class="mixer-channel" id="chan-brown">
+                <span class="channel-icon">🧠</span>
+                <div class="channel-info"><div class="channel-name">Brown Noise</div></div>
                 <div class="slider-wrapper">
-                    <div class="track-bg"></div><div class="progress-fill" id="fill-river" style="width: 0%;"></div>
-                    <input type="range" id="slider-river" min="0" max="1" step="0.01" value="0">
+                    <div class="track-bg"></div><div class="progress-fill" id="fill-brown" style="width: 0%;"></div>
+                    <input type="range" id="slider-brown" min="0" max="1" step="0.01" value="0">
                 </div>
             </div>
 
             <div class="mixer-channel" id="chan-ambient">
-                <span class="channel-icon">🎵</span>
-                <div class="channel-info"><div class="channel-name">Ambient</div></div>
+                <span class="channel-icon">✨</span>
+                <div class="channel-info"><div class="channel-name">Zen Aura</div></div>
                 <div class="slider-wrapper">
                     <div class="track-bg"></div><div class="progress-fill" id="fill-ambient" style="width: 0%;"></div>
                     <input type="range" id="slider-ambient" min="0" max="1" step="0.01" value="0">
@@ -743,9 +742,9 @@
         // --- MIXER ARCHITECTURE ENGINE (5 CHANNELS) ---
         const channels = [
             { id: 'rain', audio: document.getElementById('audio-rain'), slider: document.getElementById('slider-rain'), fill: document.getElementById('fill-rain'), container: document.getElementById('chan-rain') },
-            { id: 'wind', audio: document.getElementById('audio-wind'), slider: document.getElementById('slider-wind'), fill: document.getElementById('fill-wind'), container: document.getElementById('chan-wind') },
+            { id: 'surf', audio: document.getElementById('audio-surf'), slider: document.getElementById('slider-surf'), fill: document.getElementById('fill-surf'), container: document.getElementById('chan-surf') },
             { id: 'fire', audio: document.getElementById('audio-fire'), slider: document.getElementById('slider-fire'), fill: document.getElementById('fill-fire'), container: document.getElementById('chan-fire') },
-            { id: 'river', audio: document.getElementById('audio-river'), slider: document.getElementById('slider-river'), fill: document.getElementById('fill-river'), container: document.getElementById('chan-river') },
+            { id: 'brown', audio: document.getElementById('audio-brown'), slider: document.getElementById('slider-brown'), fill: document.getElementById('fill-brown'), container: document.getElementById('chan-brown') },
             { id: 'ambient', audio: document.getElementById('audio-ambient'), slider: document.getElementById('slider-ambient'), fill: document.getElementById('fill-ambient'), container: document.getElementById('chan-ambient') }
         ];
 
@@ -756,14 +755,14 @@
         
         let isMasterPlaying = false;
 
-        // --- PRESETS DATA (MATHEMATICALLY CALIBRATED) ---
+        // --- PRESETS DATA (NEW LOGIC) ---
         const mixPresets = {
-            'reflections': { rain: 0.05, wind: 0.00, fire: 0.15, river: 0.05, ambient: 0.05 },
-            'meditation':  { rain: 0.15, wind: 0.01, fire: 0.07, river: 0.05, ambient: 0.02 },
-            'inspiration': { rain: 0.05, wind: 0.00, fire: 0.05, river: 0.01, ambient: 0.10 },
-            'nature':      { rain: 0.20, wind: 0.03, fire: 0.05, river: 0.25, ambient: 0.00 },
-            'ambiance':    { rain: 0.05, wind: 0.01, fire: 0.25, river: 0.01, ambient: 0.05 },
-            'mystical':    { rain: 0.10, wind: 0.30, fire: 0.05, river: 0.08, ambient: 0.01 }
+            'focus':      { rain: 0.0, surf: 0.0, fire: 0.1, brown: 0.75, ambient: 0.2 },
+            'meditation':  { rain: 0.0, surf: 0.4, fire: 0.0, brown: 0.0, ambient: 0.6 },
+            'reading':    { rain: 0.6, surf: 0.0, fire: 0.25, brown: 0.0, ambient: 0.0 },
+            'inspiration': { rain: 0.0, surf: 0.5, fire: 0.0, brown: 0.0, ambient: 0.3 },
+            'nature':      { rain: 0.45, surf: 0.25, fire: 0.0, brown: 0.0, ambient: 0.0 },
+            'nap':        { rain: 0.1, surf: 0.0, fire: 0.0, brown: 0.85, ambient: 0.0 }
         };
 
         // --- DYNAMIC FOCUS TIMER LOGIC ---
