@@ -39,7 +39,7 @@
             color: var(--scanory-text-main);
             font-family: 'Inter', system-ui, sans-serif;
             height: 100vh;
-            height: 100dvh; /* Rešava problem sa dynamic toolbar preklapanjem na telefonima */
+            height: 100dvh; 
             width: 100vw;
             max-width: 100%;
             overflow: hidden; 
@@ -65,12 +65,10 @@
             width: 100%;
             height: 100%;
             position: relative;
-            /* Osigurava bezbednu distancu od dna ekrana i home-bara na novim telefonima */
-            padding-bottom: env(safe-area-inset-bottom, 1.5rem); 
+            /* Dinamičko raspoređivanje da iskoristi max prostora bez skrola */
+            justify-content: space-evenly;
+            padding: env(safe-area-inset-top, 2vh) 0 env(safe-area-inset-bottom, 2vh) 0; 
         }
-
-        .spacer-top { flex: 1.2; } 
-        .spacer-bottom { flex: 0.8; } /* Smanjeno kako ne bi guralo elemente previše dole */
 
         /* =========================================
            HEADER
@@ -78,14 +76,13 @@
         .vault-header {
             flex: none;
             text-align: center;
-            margin-bottom: 1.5rem; /* Smanjeno sa 2.5rem */
             width: 100%;
         }
 
         .vault-header h2 {
             font-family: 'Raleway', sans-serif;
             color: var(--scanory-primary);
-            font-size: 0.65rem;
+            font-size: clamp(0.65rem, 1.5vh, 0.8rem);
             text-transform: uppercase;
             letter-spacing: 0.6em;
             font-weight: 500;
@@ -93,43 +90,81 @@
         }
 
         /* =========================================
-           THE INVISIBLE SOUND EMITTER
+           THE INVISIBLE SOUND EMITTER & FOCUS TIMER
            ========================================= */
         .brand-center {
             flex: none;
             width: 100%;
             display: flex;
             justify-content: center;
-            margin-bottom: 2rem; /* Smanjeno sa 3.5rem */
             position: relative;
         }
 
         .eclipse-node {
             position: relative;
-            width: 130px; /* Blago optimizovan radijus za mobilne ekrane */
-            height: 130px;
+            width: clamp(100px, 15vh, 125px); 
+            height: clamp(100px, 15vh, 125px);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .eclipse-core {
-            width: 90px;
-            height: 90px;
+            width: clamp(75px, 11vh, 95px);
+            height: clamp(75px, 11vh, 95px);
             background: var(--scanory-bg); 
             border-radius: 50%;
             z-index: 10;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             transition: var(--transition-smooth);
+            border: 1px solid rgba(198, 138, 71, 0.15);
+            cursor: pointer;
+        }
+
+        .timer-text {
+            font-family: 'Raleway', sans-serif;
+            font-size: clamp(1.1rem, 2vh, 1.3rem);
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            color: var(--scanory-text-sub);
+            transition: var(--transition-smooth);
+            user-select: none;
+            margin-left: 0.1em; 
+        }
+        
+        .timer-label {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(0.4rem, 1vh, 0.5rem);
+            color: var(--scanory-primary);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-top: 2px;
+            opacity: 0.6;
+        }
+
+        .is-playing .timer-text {
+            color: var(--scanory-primary);
+            text-shadow: 0 0 12px rgba(198, 138, 71, 0.5);
+        }
+
+        .timer-break-pulse {
+            animation: text-pulse 1.5s infinite alternate;
+            color: var(--scanory-text-main) !important;
+        }
+
+        @keyframes text-pulse {
+            0% { opacity: 1; text-shadow: 0 0 15px rgba(244, 240, 234, 0.6); }
+            100% { opacity: 0.5; text-shadow: 0 0 0px rgba(244, 240, 234, 0); }
         }
 
         .eclipse-wave {
             position: absolute;
             width: 100%;
             height: 100%;
-            border: 1px solid rgba(198, 138, 71, 0.12);
+            border: 1px solid rgba(198, 138, 71, 0.15);
             border-radius: 50%;
             pointer-events: none;
             z-index: 1;
@@ -142,32 +177,107 @@
         .is-playing .w3 { animation: luxury-ripple 4.5s infinite linear; animation-delay: 3s; will-change: transform, opacity; }
 
         @keyframes luxury-ripple {
-            0% { transform: scale(0.65); opacity: 0; border-color: rgba(198, 138, 71, 0.25); }
+            0% { transform: scale(0.65); opacity: 0; border-color: rgba(198, 138, 71, 0.3); }
             25% { opacity: 0.4; }
             100% { transform: scale(1.5); opacity: 0; border-color: rgba(198, 138, 71, 0); filter: blur(2px); }
         }
 
         /* =========================================
-           MIXER SOUNDBOARD INTERFACE
+           SIGNATURE PRESETS (CURATED MIXES)
+           ========================================= */
+        .presets-wrapper {
+            flex: none;
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.3rem, 1vh, 0.6rem);
+        }
+
+        .presets-title {
+            font-family: 'Raleway', sans-serif;
+            font-size: clamp(0.55rem, 1.2vh, 0.65rem);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--scanory-text-sub);
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        /* STRICT 3x2 GRID LAYOUT */
+        .presets-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(0.4rem, 1.5vh, 0.6rem);
+            width: 100%;
+        }
+
+        .preset-pill {
+            background: rgba(20, 18, 16, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: clamp(0.4rem, 1.5vh, 0.6rem) 0.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .preset-pill.active {
+            background: rgba(198, 138, 71, 0.1);
+            border-color: rgba(198, 138, 71, 0.3);
+            box-shadow: 0 4px 15px rgba(198, 138, 71, 0.15);
+        }
+
+        .preset-icon {
+            font-size: clamp(0.8rem, 2vh, 1rem);
+            opacity: 0.7;
+            transition: var(--transition-smooth);
+        }
+
+        .preset-pill.active .preset-icon {
+            opacity: 1;
+        }
+
+        .preset-name {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(0.65rem, 1.5vh, 0.75rem);
+            font-weight: 500;
+            color: var(--scanory-text-sub);
+            transition: var(--transition-smooth);
+            white-space: nowrap;
+        }
+
+        .preset-pill.active .preset-name {
+            color: var(--scanory-primary);
+            font-weight: 600;
+        }
+
+        /* =========================================
+           MIXER SOUNDBOARD INTERFACE (5 CHANNELS)
            ========================================= */
         .mixer-container {
             flex: none;
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             margin: 0 auto;
-            padding: 0 1.5rem; /* Blago optimizovan bočni padding */
+            padding: 0 1rem; 
             display: flex;
             flex-direction: column;
-            gap: 0.75rem; /* Kompaktniji razmak između kanala */
+            gap: clamp(0.4rem, 1.5vh, 0.7rem); 
         }
 
         .mixer-channel {
             background: rgba(20, 18, 16, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.02);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border-radius: 18px;
-            padding: 0.85rem 1.2rem; /* Nešto uži padding radi uštede vertikalnog prostora */
+            border-radius: 16px;
+            padding: clamp(0.6rem, 2vh, 0.85rem) 1.2rem; 
             display: flex;
             align-items: center;
             gap: 1rem;
@@ -175,13 +285,13 @@
         }
 
         .mixer-channel.active {
-            border-color: rgba(198, 138, 71, 0.1);
+            border-color: rgba(198, 138, 71, 0.15);
             background: rgba(22, 19, 17, 0.85);
             box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
 
         .channel-icon {
-            font-size: 1.25rem;
+            font-size: clamp(1.2rem, 3vh, 1.4rem);
             width: 1.8rem;
             text-align: center;
             opacity: 0.25;
@@ -197,13 +307,13 @@
         }
 
         .channel-info {
-            width: 5rem;
+            width: 4.8rem;
             flex: none;
         }
 
         .channel-name {
             font-family: 'Raleway', sans-serif;
-            font-size: 0.75rem;
+            font-size: clamp(0.7rem, 1.8vh, 0.8rem);
             font-weight: 600;
             letter-spacing: 0.12em;
             text-transform: uppercase;
@@ -227,16 +337,16 @@
             position: absolute;
             left: 0; right: 0; top: 50%;
             transform: translateY(-50%);
-            height: 3px; background: rgba(255, 255, 255, 0.03);
-            border-radius: 3px; z-index: 1;
+            height: 4px; background: rgba(255, 255, 255, 0.04);
+            border-radius: 4px; z-index: 1;
         }
 
         .progress-fill {
             position: absolute;
             left: 0; top: 50%;
             transform: translateY(-50%);
-            height: 3px; background: rgba(255,255,255,0.15);
-            border-radius: 3px; z-index: 2;
+            height: 4px; background: rgba(255,255,255,0.15);
+            border-radius: 4px; z-index: 2;
             pointer-events: none;
             transition: background 0.4s ease, width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
         }
@@ -251,60 +361,60 @@
         }
 
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%;
-            background: #3A3530; cursor: pointer; border: 1px solid rgba(0,0,0,0.4);
-            transition: all 0.2s ease; margin-top: -5px;
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+            background: #3A3530; cursor: pointer; border: 1px solid rgba(0,0,0,0.5);
+            transition: all 0.2s ease; margin-top: -6px;
         }
 
         .mixer-channel.active input[type=range]::-webkit-slider-thumb {
             background: var(--scanory-text-main);
             border-color: var(--scanory-primary);
-            box-shadow: 0 0 8px rgba(198, 138, 71, 0.4);
+            box-shadow: 0 0 10px rgba(198, 138, 71, 0.5);
         }
 
         input[type=range]::-webkit-slider-thumb:active { transform: scale(1.25); }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 3px; background: transparent; border: none; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: transparent; border: none; }
         
         input[type=range]::-moz-range-thumb {
-            height: 14px; width: 14px; border: 1px solid rgba(0,0,0,0.4); border-radius: 50%;
+            height: 16px; width: 16px; border: 1px solid rgba(0,0,0,0.5); border-radius: 50%;
             background: #3A3530; cursor: pointer; transition: all 0.2s ease;
         }
         .mixer-channel.active input[type=range]::-moz-range-thumb { background: var(--scanory-text-main); border-color: var(--scanory-primary); }
-        input[type=range]::-moz-range-track { width: 100%; height: 3px; background: transparent; border: none; }
+        input[type=range]::-moz-range-track { width: 100%; height: 4px; background: transparent; border: none; }
 
         /* =========================================
            LUXURY CONTROLS PANEL (MASTER + SHUFFLE)
            ========================================= */
         .controls-panel {
             flex: none;
-            width: calc(100% - 3rem);
-            max-width: 356px;
-            margin: 1.5rem auto 0 auto; /* Smanjeno sa 3rem da se odvoji od dna pretraživača */
-            background: rgba(20, 18, 16, 0.5);
+            width: calc(100% - 2rem);
+            max-width: 380px;
+            margin: 0 auto; 
+            background: rgba(20, 18, 16, 0.6);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            padding: 0.5rem;
-            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: clamp(0.5rem, 1.5vh, 0.75rem);
+            border-radius: 28px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            gap: 0.6rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             position: relative;
-            z-index: 20; /* Osigurava da je klik uvek prioritetan */
+            z-index: 20; 
         }
 
         .btn-master-play {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.03);
             color: var(--scanory-text-main);
-            border: 1px solid rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.05);
             font-family: 'Raleway', sans-serif;
-            font-size: 0.75rem;
+            font-size: clamp(0.75rem, 2vh, 0.85rem);
             font-weight: 600;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            padding: 1rem 1.8rem;
-            border-radius: 24px;
+            padding: clamp(0.9rem, 2.5vh, 1.1rem) 1.5rem;
+            border-radius: 20px;
             cursor: pointer;
             transition: var(--transition-smooth);
             display: flex;
@@ -315,25 +425,25 @@
         }
 
         .btn-master-play:hover {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(198, 138, 71, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(198, 138, 71, 0.25);
         }
 
         .btn-master-play.active {
             background: linear-gradient(135deg, var(--scanory-secondary), var(--scanory-primary));
             color: #12100E;
             border-color: transparent;
-            box-shadow: 0 10px 25px rgba(198, 138, 71, 0.25);
+            box-shadow: 0 10px 25px rgba(198, 138, 71, 0.3);
             font-weight: 700;
         }
 
         .btn-shuffle {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.03);
             color: var(--scanory-text-sub);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            width: 3.2rem;
-            height: 3.2rem;
-            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: clamp(3.2rem, 8vh, 3.6rem);
+            height: clamp(3.2rem, 8vh, 3.6rem);
+            border-radius: 20px;
             cursor: pointer;
             transition: var(--transition-smooth);
             display: flex;
@@ -343,13 +453,15 @@
         }
 
         .btn-shuffle:hover {
-            background: rgba(198, 138, 71, 0.08);
-            border-color: rgba(198, 138, 71, 0.25);
+            background: rgba(198, 138, 71, 0.1);
+            border-color: rgba(198, 138, 71, 0.3);
             color: var(--scanory-primary);
         }
 
         .btn-shuffle svg {
             transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            width: clamp(18px, 4vh, 22px);
+            height: clamp(18px, 4vh, 22px);
         }
 
         .btn-shuffle:hover svg {
@@ -360,15 +472,158 @@
             transform: scale(0.92);
         }
 
-        .hidden { display: none !important; }
+        /* =========================================
+           TIMER SETUP MODAL (SCANORY LUXURY)
+           ========================================= */
+        .fullscreen-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(12, 10, 9, 0.85); 
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px); 
+            z-index: 999999; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px; 
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .fullscreen-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .pop-box { 
+            position: relative; 
+            background: var(--scanory-section); 
+            border: 1px solid rgba(198, 138, 71, 0.3); 
+            color: var(--scanory-text-main); 
+            padding: 30px; 
+            border-radius: 24px; 
+            text-align: center; 
+            font-family: 'Raleway', sans-serif; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 1px 1px rgba(198,138,71,0.05); 
+            width: 100%;
+            max-width: 340px; 
+            transform: scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .fullscreen-overlay.active .pop-box {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 0.85rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--scanory-primary);
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: var(--scanory-text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .input-field {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(198, 138, 71, 0.2);
+            color: var(--scanory-text-main);
+            font-family: 'Raleway', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            width: 80px;
+            padding: 0.5rem;
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--scanory-primary);
+        }
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 2rem;
+        }
+
+        .btn-modal {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: none;
+        }
+
+        .btn-start {
+            background: var(--scanory-primary);
+            color: #12100E;
+        }
+
+        .btn-start:hover { background: var(--scanory-secondary); }
+
+        .btn-cancel {
+            background: rgba(255,255,255,0.05);
+            color: var(--scanory-text-sub);
+        }
+
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); color: var(--scanory-text-main); }
     </style>
 </head>
 <body id="vaultBody">
 
+    <div id="timerModal" class="fullscreen-overlay">
+        <div class="pop-box">
+            <div class="modal-title">Session Setup</div>
+            
+            <div class="input-group">
+                <span class="input-label">Focus (min)</span>
+                <input type="number" id="focusInput" class="input-field" value="45" min="1" max="120">
+            </div>
+            
+            <div class="input-group">
+                <span class="input-label">Break (min)</span>
+                <input type="number" id="breakInput" class="input-field" value="5" min="1" max="60">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="disableTimer()">Disable</button>
+                <button class="btn-modal btn-start" onclick="applyTimerSettings()">Start</button>
+            </div>
+        </div>
+    </div>
+
     <canvas id="stardust"></canvas>
 
     <main>
-        <div class="spacer-top"></div>
 
         <div class="vault-header">
             <h2>Scanory</h2>
@@ -380,63 +635,88 @@
                 <div class="eclipse-wave w1"></div>
                 <div class="eclipse-wave w2"></div>
                 <div class="eclipse-wave w3"></div>
-                <div class="eclipse-core"></div>
+                <div class="eclipse-core" onclick="openTimerModal()" title="Tap to setup session">
+                    <span id="studyTimer" class="timer-text">∞</span>
+                    <span id="timerLabel" class="timer-label">SET FOCUS</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="presets-wrapper">
+            <div class="presets-title">Signature Mixes</div>
+            <div class="presets-grid">
+                <div class="preset-pill" onclick="applyPreset('reflections', this)">
+                    <span class="preset-icon">🌙</span><span class="preset-name">Reflections</span>
+                </div>
+                <div class="preset-pill" onclick="applyPreset('meditation', this)">
+                    <span class="preset-icon">🌿</span><span class="preset-name">Meditation</span>
+                </div>
+                <div class="preset-pill" onclick="applyPreset('inspiration', this)">
+                    <span class="preset-icon">✨</span><span class="preset-name">Inspiration</span>
+                </div>
+                <div class="preset-pill" onclick="applyPreset('nature', this)">
+                    <span class="preset-icon">🍃</span><span class="preset-name">Nature</span>
+                </div>
+                <div class="preset-pill" onclick="applyPreset('ambiance', this)">
+                    <span class="preset-icon">🕯️</span><span class="preset-name">Ambiance</span>
+                </div>
+                <div class="preset-pill" onclick="applyPreset('mystical', this)">
+                    <span class="preset-icon">🔮</span><span class="preset-name">Mystical</span>
+                </div>
             </div>
         </div>
 
         <div id="audioRack">
-            <audio id="audio-rain" loop preload="auto" src="./rain.mp3"></audio>
-            <audio id="audio-wind" loop preload="auto" src="./wind.mp3"></audio>
-            <audio id="audio-fire" loop preload="auto" src="./fire.mp3"></audio>
-            <audio id="audio-birds" loop preload="auto" src="./birds.mp3"></audio>
+            <audio id="audio-rain" loop preload="auto" src="./SoftRain.mp3"></audio>
+            <audio id="audio-wind" loop preload="auto" src="./LightWind.mp3"></audio>
+            <audio id="audio-fire" loop preload="auto" src="./Fireplace.mp3"></audio>
+            <audio id="audio-river" loop preload="auto" src="./SmallRiver.mp3"></audio>
+            <audio id="audio-ambient" loop preload="auto" src="./AmbientTone.mp3"></audio>
         </div>
 
         <div class="mixer-container">
             <div class="mixer-channel" id="chan-rain">
                 <span class="channel-icon">🌧️</span>
-                <div class="channel-info">
-                    <div class="channel-name">Rain</div>
-                </div>
+                <div class="channel-info"><div class="channel-name">Rain</div></div>
                 <div class="slider-wrapper">
-                    <div class="track-bg"></div>
-                    <div class="progress-fill" id="fill-rain" style="width: 50%;"></div>
+                    <div class="track-bg"></div><div class="progress-fill" id="fill-rain" style="width: 50%;"></div>
                     <input type="range" id="slider-rain" min="0" max="1" step="0.01" value="0.5">
                 </div>
             </div>
 
             <div class="mixer-channel" id="chan-wind">
                 <span class="channel-icon">💨</span>
-                <div class="channel-info">
-                    <div class="channel-name">Wind</div>
-                </div>
+                <div class="channel-info"><div class="channel-name">Wind</div></div>
                 <div class="slider-wrapper">
-                    <div class="track-bg"></div>
-                    <div class="progress-fill" id="fill-wind" style="width: 0%;"></div>
+                    <div class="track-bg"></div><div class="progress-fill" id="fill-wind" style="width: 0%;"></div>
                     <input type="range" id="slider-wind" min="0" max="1" step="0.01" value="0">
                 </div>
             </div>
 
             <div class="mixer-channel" id="chan-fire">
                 <span class="channel-icon">🪵</span>
-                <div class="channel-info">
-                    <div class="channel-name">Fireplace</div>
-                </div>
+                <div class="channel-info"><div class="channel-name">Fireplace</div></div>
                 <div class="slider-wrapper">
-                    <div class="track-bg"></div>
-                    <div class="progress-fill" id="fill-fire" style="width: 0%;"></div>
+                    <div class="track-bg"></div><div class="progress-fill" id="fill-fire" style="width: 0%;"></div>
                     <input type="range" id="slider-fire" min="0" max="1" step="0.01" value="0">
                 </div>
             </div>
 
-            <div class="mixer-channel" id="chan-birds">
-                <span class="channel-icon">🐦</span>
-                <div class="channel-info">
-                    <div class="channel-name">Birds</div>
-                </div>
+            <div class="mixer-channel" id="chan-river">
+                <span class="channel-icon">🌊</span>
+                <div class="channel-info"><div class="channel-name">River</div></div>
                 <div class="slider-wrapper">
-                    <div class="track-bg"></div>
-                    <div class="progress-fill" id="fill-birds" style="width: 0%;"></div>
-                    <input type="range" id="slider-birds" min="0" max="1" step="0.01" value="0">
+                    <div class="track-bg"></div><div class="progress-fill" id="fill-river" style="width: 0%;"></div>
+                    <input type="range" id="slider-river" min="0" max="1" step="0.01" value="0">
+                </div>
+            </div>
+
+            <div class="mixer-channel" id="chan-ambient">
+                <span class="channel-icon">🎵</span>
+                <div class="channel-info"><div class="channel-name">Ambient</div></div>
+                <div class="slider-wrapper">
+                    <div class="track-bg"></div><div class="progress-fill" id="fill-ambient" style="width: 0%;"></div>
+                    <input type="range" id="slider-ambient" min="0" max="1" step="0.01" value="0">
                 </div>
             </div>
         </div>
@@ -447,7 +727,7 @@
             </button>
             
             <button id="shuffleBtn" class="btn-shuffle" title="Infinite Smart Shuffle">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="16 3 21 3 21 8"></polyline>
                     <line x1="4" y1="20" x2="21" y2="3"></line>
                     <polyline points="21 16 21 21 16 21"></polyline>
@@ -457,16 +737,16 @@
             </button>
         </div>
 
-        <div class="spacer-bottom"></div>
     </main>
 
     <script>
-        // --- MIXER ARCHITECTURE ENGINE ---
+        // --- MIXER ARCHITECTURE ENGINE (5 CHANNELS) ---
         const channels = [
             { id: 'rain', audio: document.getElementById('audio-rain'), slider: document.getElementById('slider-rain'), fill: document.getElementById('fill-rain'), container: document.getElementById('chan-rain') },
             { id: 'wind', audio: document.getElementById('audio-wind'), slider: document.getElementById('slider-wind'), fill: document.getElementById('fill-wind'), container: document.getElementById('chan-wind') },
             { id: 'fire', audio: document.getElementById('audio-fire'), slider: document.getElementById('slider-fire'), fill: document.getElementById('fill-fire'), container: document.getElementById('chan-fire') },
-            { id: 'birds', audio: document.getElementById('audio-birds'), slider: document.getElementById('slider-birds'), fill: document.getElementById('fill-birds'), container: document.getElementById('chan-birds') }
+            { id: 'river', audio: document.getElementById('audio-river'), slider: document.getElementById('slider-river'), fill: document.getElementById('fill-river'), container: document.getElementById('chan-river') },
+            { id: 'ambient', audio: document.getElementById('audio-ambient'), slider: document.getElementById('slider-ambient'), fill: document.getElementById('fill-ambient'), container: document.getElementById('chan-ambient') }
         ];
 
         const masterPlayBtn = document.getElementById('masterPlayBtn');
@@ -476,13 +756,195 @@
         
         let isMasterPlaying = false;
 
-        // Initialize volumes, parameters and endless loop architecture
+        // --- PRESETS DATA (MATHEMATICALLY CALIBRATED) ---
+        const mixPresets = {
+            'reflections': { rain: 0.05, wind: 0.00, fire: 0.15, river: 0.05, ambient: 0.05 },
+            'meditation':  { rain: 0.15, wind: 0.01, fire: 0.07, river: 0.05, ambient: 0.02 },
+            'inspiration': { rain: 0.05, wind: 0.00, fire: 0.05, river: 0.01, ambient: 0.10 },
+            'nature':      { rain: 0.20, wind: 0.03, fire: 0.05, river: 0.25, ambient: 0.00 },
+            'ambiance':    { rain: 0.05, wind: 0.01, fire: 0.25, river: 0.01, ambient: 0.05 },
+            'mystical':    { rain: 0.10, wind: 0.30, fire: 0.05, river: 0.08, ambient: 0.01 }
+        };
+
+        // --- DYNAMIC FOCUS TIMER LOGIC ---
+        let isTimerActive = false;
+        let timerMode = 'focus'; 
+        let focusDuration = 45 * 60; 
+        let breakDuration = 5 * 60;  
+        let currentTimerSecs = 0;
+        let timerInterval = null;
+        
+        const timerDisplay = document.getElementById('studyTimer');
+        const timerLabel = document.getElementById('timerLabel');
+        const timerModal = document.getElementById('timerModal');
+        const duckFactor = 0.15; 
+
+        function formatTimer(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function openTimerModal() {
+            timerModal.classList.add('active');
+        }
+
+        function closeTimerModal() {
+            timerModal.classList.remove('active');
+        }
+
+        function applyTimerSettings() {
+            const fInput = parseInt(document.getElementById('focusInput').value) || 45;
+            const bInput = parseInt(document.getElementById('breakInput').value) || 5;
+
+            focusDuration = fInput * 60;
+            breakDuration = bInput * 60;
+
+            isTimerActive = true;
+            timerMode = 'focus';
+            currentTimerSecs = focusDuration;
+
+            timerDisplay.textContent = formatTimer(currentTimerSecs);
+            timerLabel.textContent = "FOCUS";
+            timerDisplay.classList.remove('timer-break-pulse');
+
+            restoreAudioVolume();
+            closeTimerModal();
+            manageTimer();
+        }
+
+        function disableTimer() {
+            isTimerActive = false;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            
+            timerDisplay.textContent = "∞";
+            timerLabel.textContent = "SET FOCUS";
+            timerDisplay.classList.remove('timer-break-pulse');
+            
+            restoreAudioVolume(); 
+            closeTimerModal();
+        }
+
+        function duckAudioVolume() {
+            const steps = 20;
+            const stepTime = 50; 
+            let step = 0;
+            
+            let downInterval = setInterval(() => {
+                step++;
+                let progress = step / steps;
+                channels.forEach(chan => {
+                    let baseVol = parseFloat(chan.slider.value);
+                    let currentVol = baseVol - (baseVol * (1 - duckFactor) * progress);
+                    if(currentVol < 0) currentVol = 0;
+                    chan.audio.volume = currentVol;
+                });
+                if(step >= steps) clearInterval(downInterval);
+            }, stepTime);
+        }
+
+        function restoreAudioVolume() {
+            const steps = 20;
+            const stepTime = 50; 
+            let stepUp = 0;
+            
+            let upInterval = setInterval(() => {
+                stepUp++;
+                let progress = stepUp / steps;
+                channels.forEach(chan => {
+                    let baseVol = parseFloat(chan.slider.value);
+                    let minVol = baseVol * duckFactor;
+                    let currentVol = minVol + ((baseVol - minVol) * progress);
+                    if(currentVol > 1) currentVol = 1;
+                    chan.audio.volume = currentVol;
+                });
+                if(stepUp >= steps) clearInterval(upInterval);
+            }, stepTime);
+        }
+
+        function switchTimerMode() {
+            if (timerMode === 'focus') {
+                timerMode = 'break';
+                currentTimerSecs = breakDuration;
+                timerLabel.textContent = "BREAK";
+                timerDisplay.classList.add('timer-break-pulse');
+                duckAudioVolume();
+            } else {
+                timerMode = 'focus';
+                currentTimerSecs = focusDuration;
+                timerLabel.textContent = "FOCUS";
+                timerDisplay.classList.remove('timer-break-pulse');
+                restoreAudioVolume();
+            }
+            timerDisplay.textContent = formatTimer(currentTimerSecs);
+        }
+
+        function manageTimer() {
+            if (isTimerActive && isMasterPlaying) {
+                if (!timerInterval) {
+                    timerInterval = setInterval(() => {
+                        currentTimerSecs--;
+                        if (currentTimerSecs <= 0) {
+                            switchTimerMode();
+                        } else {
+                            timerDisplay.textContent = formatTimer(currentTimerSecs);
+                        }
+                    }, 1000);
+                }
+            } else {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function clearPresetActiveStates() {
+            document.querySelectorAll('.preset-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+        }
+
+        // --- PRESET APPLICATION ---
+        function applyPreset(presetKey, element) {
+            clearPresetActiveStates();
+            element.classList.add('active');
+
+            const volumes = mixPresets[presetKey];
+            
+            channels.forEach(chan => {
+                const targetVolume = volumes[chan.id] || 0;
+                
+                if(timerMode === 'break' && isTimerActive) {
+                    chan.audio.volume = targetVolume * duckFactor;
+                } else {
+                    chan.audio.volume = targetVolume;
+                }
+                
+                chan.slider.value = targetVolume;
+                chan.fill.style.width = `${targetVolume * 100}%`;
+                
+                updateChannelState(chan);
+
+                if (isMasterPlaying) {
+                    if (targetVolume > 0) {
+                        chan.audio.play().catch(() => {});
+                    } else {
+                        chan.audio.pause();
+                    }
+                }
+            });
+
+            if (!isMasterPlaying) {
+                toggleMasterPlayback();
+            }
+        }
+
         channels.forEach(chan => {
             chan.audio.volume = chan.slider.value;
             chan.fill.style.width = `${chan.slider.value * 100}%`;
             updateChannelState(chan);
 
-            // ENDLESS LOOP ARCHITECTURE (High precision buffering fallback)
+            // ENDLESS LOOP ARCHITECTURE
             chan.audio.addEventListener('timeupdate', () => {
                 if (chan.audio.currentTime > chan.audio.duration - 0.3) {
                     chan.audio.currentTime = 0;
@@ -493,8 +955,15 @@
             });
 
             chan.slider.addEventListener('input', (e) => {
+                clearPresetActiveStates();
+
                 const val = e.target.value;
-                chan.audio.volume = val;
+                if(timerMode === 'break' && isTimerActive) {
+                    chan.audio.volume = val * duckFactor;
+                } else {
+                    chan.audio.volume = val;
+                }
+                
                 chan.fill.style.width = `${val * 100}%`;
                 
                 updateChannelState(chan);
@@ -508,7 +977,7 @@
         });
 
         function updateChannelState(chan) {
-            if (chan.audio.volume > 0) {
+            if (chan.slider.value > 0) {
                 chan.container.classList.add('active');
             } else {
                 chan.container.classList.remove('active');
@@ -517,6 +986,7 @@
 
         // --- INFINITE MATHEMATICAL SHUFFLE ENGINE ---
         function triggerInfiniteShuffle() {
+            clearPresetActiveStates(); 
             const focusIndex = Math.floor(Math.random() * channels.length);
             
             channels.forEach((chan, index) => {
@@ -532,7 +1002,12 @@
                     }
                 }
                 
-                chan.audio.volume = targetVolume;
+                if(timerMode === 'break' && isTimerActive) {
+                    chan.audio.volume = targetVolume * duckFactor;
+                } else {
+                    chan.audio.volume = targetVolume;
+                }
+
                 chan.slider.value = targetVolume;
                 chan.fill.style.width = `${targetVolume * 100}%`;
                 
@@ -561,7 +1036,7 @@
                 masterPlayText.textContent = "Mute Vault";
 
                 channels.forEach(chan => {
-                    if (chan.audio.volume > 0) {
+                    if (chan.slider.value > 0) {
                         chan.audio.play().catch(err => {
                             console.log("SCANORY Engine active.");
                         });
@@ -576,6 +1051,8 @@
                     chan.audio.pause();
                 });
             }
+            
+            manageTimer();
         }
 
         masterPlayBtn.addEventListener('click', toggleMasterPlayback);
